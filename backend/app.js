@@ -9,6 +9,7 @@ import userRouter from './Modules/User/User.js';
 import rateLimit from 'express-rate-limit';
 import { swaggerSpec } from './Utils/Swagger.js';
 import swaggerUi from 'swagger-ui-express';
+import authRouter from './Modules/Auth/Auth.js';
 
 const limiter=rateLimit({
   windowMs:10*60*1000,
@@ -25,6 +26,7 @@ app.use(limiter)
 app.use('/upload',express.static(`${__dirname}/Public`))
 app.use(exportValidationData)
 app.use('/api/users',userRouter)
+app.use("/api/auth",authRouter)
 
 app.use('/api-docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))
 app.use((req,res,next)=>{
