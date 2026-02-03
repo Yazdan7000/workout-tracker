@@ -1,0 +1,37 @@
+import express from 'express'
+import morgan from 'morgan';
+import path from "path";
+import { fileURLToPath } from "url";
+import cors from 'cors';
+import { catchError } from 'vanta-api';
+import { exportValidationData } from './Middlewares/ExportValidation.js';
+import userRouter from './Modules/User/User.js';
+import rateLimit from 'express-rate-limit';
+import { swaggerSpec } from './Utils/Swagger.js';
+import swaggerUi from 'swagger-ui-express';
+
+const limiter=rateLimit({
+  windowMs:10*60*1000,
+  max:100,
+  message:"Too many requests from this IP, please try again after 10 minutes"
+})
+const app = express();
+const __filename = fileURLToPath(import.meta.url);
+export const __dirname = path.dirname(__filename);
+app.use(express.json());
+app.use(morgan("dev"));
+app.use(cors())
+app.use(limiter)
+app.use('/upload',express.static(`${__dirname}/Public`))
+app.use(exportValidationData)
+app.use('/api/users',userRouter)
+
+app.use('/api-docs',swaggerUi.serve,swaggerUi.setup(swaggerSpec))
+app.use((req,res,next)=>{
+  return res.status(404).json({
+    message:'Route Not found',
+    success:false
+  })
+})
+app.use(catchError)
+export default app
