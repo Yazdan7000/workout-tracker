@@ -15,7 +15,19 @@
  *     MongoId:
  *       type: string
  *       description: MongoDB ObjectId
- *       example: "65a8f8f5f2c2a2b3c4d5e6f7"
+ *       example: "69832e315de4e6b721a24435"
+ *
+ *     Exercise:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           $ref: "#/components/schemas/MongoId"
+ *         title:
+ *           type: string
+ *           example: "Push Ups"
+ *         description:
+ *           type: string
+ *           example: "Upper body exercise"
  *
  *     Workout:
  *       type: object
@@ -40,14 +52,18 @@
  *           type: boolean
  *           default: true
  *           example: true
+ *         exercises:
+ *           type: array
+ *           items:
+ *             $ref: "#/components/schemas/Exercise"
  *         createdAt:
  *           type: string
  *           format: date-time
- *           example: "2026-01-07T07:25:58.041Z"
+ *           example: "2026-02-04T11:32:01.140Z"
  *         updatedAt:
  *           type: string
  *           format: date-time
- *           example: "2026-01-07T07:25:58.041Z"
+ *           example: "2026-02-04T11:32:01.140Z"
  *
  *     CreateWorkoutInput:
  *       type: object
@@ -67,6 +83,10 @@
  *         isActive:
  *           type: boolean
  *           example: true
+ *         exercises:
+ *           type: array
+ *           items:
+ *             $ref: "#/components/schemas/MongoId"
  *
  *     UpdateWorkoutInput:
  *       type: object
@@ -85,6 +105,10 @@
  *         isActive:
  *           type: boolean
  *           example: false
+ *         exercises:
+ *           type: array
+ *           items:
+ *             $ref: "#/components/schemas/MongoId"
  *
  *     WorkoutWriteResponse:
  *       type: object
@@ -114,70 +138,6 @@
 
 /**
  * =========================
- * vanta-api ApiFeatures query params (common)
- * =========================
- * @swagger
- * components:
- *   parameters:
- *     PageParam:
- *       in: query
- *       name: page
- *       schema:
- *         type: integer
- *         minimum: 1
- *       required: false
- *       description: Page number (pagination)
- *       example: 1
- *     LimitParam:
- *       in: query
- *       name: limit
- *       schema:
- *         type: integer
- *         minimum: 1
- *       required: false
- *       description: Page size (pagination)
- *       example: 10
- *     SortParam:
- *       in: query
- *       name: sort
- *       schema:
- *         type: string
- *       required: false
- *       description: Sort by fields. Comma-separated. Prefix `-` for desc. Example `createdAt,-title`
- *       example: "createdAt,-title"
- *     FieldsParam:
- *       in: query
- *       name: fields
- *       schema:
- *         type: string
- *       required: false
- *       description: Select returned fields. Comma-separated. Example `title,duration,isActive`
- *       example: "title,duration,isActive"
- *     PopulateParam:
- *       in: query
- *       name: populate
- *       schema:
- *         type: string
- *       required: false
- *       description: Populate referenced fields (if any). Comma-separated.
- *       example: ""
- *     AdvancedFilterParam:
- *       in: query
- *       name: _filters
- *       schema:
- *         type: string
- *       required: false
- *       description: |
- *         Advanced filtering via query params (if supported by your ApiFeatures).
- *         Example:
- *         - `isActive=true`
- *         - `duration[gte]=30`
- *         - `title[regex]=body`
- *       example: "Use real query params; see description."
- */
-
-/**
- * =========================
  * /api/workouts (GET)
  * =========================
  * @swagger
@@ -185,31 +145,50 @@
  *   get:
  *     tags: [Workout]
  *     summary: Get all workouts
- *     description: |
- *       Public endpoint (no admin required).
- *
- *       Validator supports:
- *       - page, limit, search (string), sort (string), fields (string), isActive (boolean)
- *
+ *     description: Public endpoint. Supports search, pagination, filters.
  *     parameters:
- *       - $ref: "#/components/parameters/PageParam"
- *       - $ref: "#/components/parameters/LimitParam"
- *       - $ref: "#/components/parameters/SortParam"
- *       - $ref: "#/components/parameters/FieldsParam"
- *       - $ref: "#/components/parameters/PopulateParam"
- *       - $ref: "#/components/parameters/AdvancedFilterParam"
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Page number
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Page size
+ *         example: 10
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *         description: Sort fields (prefix '-' for desc)
+ *         example: "createdAt,-title"
+ *       - in: query
+ *         name: fields
+ *         schema:
+ *           type: string
+ *         description: Comma separated fields to return, include 'exercises'
+ *         example: "title,duration,isActive,exercises"
+ *       - in: query
+ *         name: populate
+ *         schema:
+ *           type: string
+ *         description: Populate referenced fields
+ *         example: "exercises"
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         required: false
- *         description: Search string (title)
- *         example: "Full Body"
+ *         description: Search in title
+ *         example: "Push"
  *       - in: query
  *         name: isActive
  *         schema:
  *           type: boolean
- *         required: false
  *         description: Filter by active workouts
  *         example: true
  *     responses:
@@ -221,15 +200,62 @@
  *               type: object
  *               example:
  *                 success: true
- *                 results: 2
+ *                 results: 5
  *                 page: 1
  *                 limit: 10
  *                 data:
- *                   - _id: "65a8f8f5f2c2a2b3c4d5e6f7"
- *                     title: "Full Body Workout"
- *                     description: "تمرین کامل بدن برای مبتدی‌ها"
- *                     duration: 45
+ *                   - _id: "69832e315de4e6b721a24435"
+ *                     title: "Squats"
+ *                     description: "Lower body workout"
+ *                     duration: 20
  *                     isActive: true
+ *                     exercises:
+ *                       - _id: "69832e315de4e6b721a2442f"
+ *                         title: "Squats"
+ *                         description: "Lower body exercise"
+ */
+
+/**
+ * =========================
+ * /api/workouts/{id} (GET)
+ * =========================
+ * @swagger
+ * /api/workouts/{id}:
+ *   get:
+ *     tags: [Workout]
+ *     summary: Get single workout
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           $ref: "#/components/schemas/MongoId"
+ *         description: Workout id
+ *       - in: query
+ *         name: populate
+ *         schema:
+ *           type: string
+ *         description: Populate exercises
+ *         example: "exercises"
+ *     responses:
+ *       200:
+ *         description: Workout fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               example:
+ *                 success: true
+ *                 data:
+ *                   _id: "69832e315de4e6b721a24435"
+ *                   title: "Squats"
+ *                   description: "Lower body workout"
+ *                   duration: 20
+ *                   isActive: true
+ *                   exercises:
+ *                     - _id: "69832e315de4e6b721a2442f"
+ *                       title: "Squats"
+ *                       description: "Lower body exercise"
  */
 
 /**
@@ -262,53 +288,6 @@
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/ErrorResponse"
- *       422:
- *         description: Validation error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
- */
-
-/**
- * =========================
- * /api/workouts/{id} (GET)
- * =========================
- * @swagger
- * /api/workouts/{id}:
- *   get:
- *     tags: [Workout]
- *     summary: Get single workout
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           $ref: "#/components/schemas/MongoId"
- *         description: Workout id
- *       - $ref: "#/components/parameters/FieldsParam"
- *       - $ref: "#/components/parameters/PopulateParam"
- *     responses:
- *       200:
- *         description: Workout fetched successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               example:
- *                 success: true
- *                 data:
- *                   _id: "65a8f8f5f2c2a2b3c4d5e6f7"
- *                   title: "Full Body Workout"
- *                   description: "تمرین کامل بدن برای مبتدی‌ها"
- *                   duration: 45
- *                   isActive: true
- *       422:
- *         description: Validation error (invalid id)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
  */
 
 /**
@@ -328,7 +307,6 @@
  *         required: true
  *         schema:
  *           $ref: "#/components/schemas/MongoId"
- *         description: Workout id
  *     requestBody:
  *       required: true
  *       content:
@@ -336,7 +314,7 @@
  *           schema:
  *             $ref: "#/components/schemas/UpdateWorkoutInput"
  *     responses:
- *       201:
+ *       200:
  *         description: Workout updated successfully
  *         content:
  *           application/json:
@@ -344,12 +322,6 @@
  *               $ref: "#/components/schemas/WorkoutWriteResponse"
  *       401:
  *         description: Unauthorized / no permission
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
- *       422:
- *         description: Validation error
  *         content:
  *           application/json:
  *             schema:
@@ -373,9 +345,8 @@
  *         required: true
  *         schema:
  *           $ref: "#/components/schemas/MongoId"
- *         description: Workout id
  *     responses:
- *       201:
+ *       200:
  *         description: Workout deleted successfully
  *         content:
  *           application/json:
@@ -383,12 +354,6 @@
  *               $ref: "#/components/schemas/WorkoutWriteResponse"
  *       401:
  *         description: Unauthorized / no permission
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
- *       422:
- *         description: Validation error (invalid id)
  *         content:
  *           application/json:
  *             schema:

@@ -5,8 +5,7 @@ import mongoose from "mongoose";
    helpers
 ========================= */
 
-const isMongoId = (value) =>
-  mongoose.Types.ObjectId.isValid(value);
+const isMongoId = (value) => mongoose.Types.ObjectId.isValid(value);
 
 /* =========================
    PARAMS
@@ -15,7 +14,8 @@ const isMongoId = (value) =>
 export const workoutIdParam = [
   param("id")
     .notEmpty()
-    .withMessage("workout id is required")
+    .withMessage("Workout id is required")
+    .bail()
     .custom(isMongoId)
     .withMessage("Invalid workout id"),
 ];
@@ -28,17 +28,17 @@ export const getAllWorkoutValidator = [
   query("page")
     .optional()
     .isInt({ min: 1 })
-    .withMessage("page must be a positive number"),
+    .withMessage("Page must be a positive number"),
 
   query("limit")
     .optional()
     .isInt({ min: 1 })
-    .withMessage("limit must be a positive number"),
+    .withMessage("Limit must be a positive number"),
 
   query("search")
     .optional()
     .isString()
-    .withMessage("search must be a string"),
+    .withMessage("Search must be a string"),
 ];
 
 /* =========================
@@ -48,34 +48,42 @@ export const getAllWorkoutValidator = [
 export const createWorkoutValidator = [
   body("title")
     .exists()
-    .withMessage("title is required")
+    .withMessage("Title is required")
     .bail()
     .isString()
-    .withMessage("title must be a string")
+    .withMessage("Title must be a string")
     .bail()
     .trim()
     .notEmpty()
-    .withMessage("title cannot be empty")
+    .withMessage("Title cannot be empty")
     .isLength({ max: 100 })
-    .withMessage("title must be less than 100 characters"),
+    .withMessage("Title must be less than 100 characters"),
 
   body("description")
     .optional()
     .isString()
-    .withMessage("description must be a string")
+    .withMessage("Description must be a string")
     .trim(),
 
   body("duration")
     .exists()
-    .withMessage("duration is required")
+    .withMessage("Duration is required")
     .bail()
     .isInt({ min: 1 })
-    .withMessage("duration must be a positive number"),
+    .withMessage("Duration must be a positive number"),
 
   body("isActive")
     .optional()
     .isBoolean()
     .withMessage("isActive must be boolean"),
+
+  body("exercises")
+    .optional()
+    .isArray()
+    .withMessage("Exercises must be an array of ObjectId")
+    .bail()
+    .custom((arr) => arr.every(isMongoId))
+    .withMessage("Each exercise must be a valid MongoId"),
 ];
 
 /* =========================
@@ -88,27 +96,35 @@ export const updateWorkoutValidator = [
   body("title")
     .optional()
     .isString()
-    .withMessage("title must be a string")
+    .withMessage("Title must be a string")
     .bail()
     .trim()
     .notEmpty()
-    .withMessage("title cannot be empty")
+    .withMessage("Title cannot be empty")
     .isLength({ max: 100 })
-    .withMessage("title must be less than 100 characters"),
+    .withMessage("Title must be less than 100 characters"),
 
   body("description")
     .optional()
     .isString()
-    .withMessage("description must be a string")
+    .withMessage("Description must be a string")
     .trim(),
 
   body("duration")
     .optional()
     .isInt({ min: 1 })
-    .withMessage("duration must be a positive number"),
+    .withMessage("Duration must be a positive number"),
 
   body("isActive")
     .optional()
     .isBoolean()
     .withMessage("isActive must be boolean"),
+
+  body("exercises")
+    .optional()
+    .isArray()
+    .withMessage("Exercises must be an array of ObjectId")
+    .bail()
+    .custom((arr) => arr.every(isMongoId))
+    .withMessage("Each exercise must be a valid MongoId"),
 ];

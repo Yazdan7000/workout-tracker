@@ -18,8 +18,15 @@ export const getAll = catchAsync(async (req, res, next) => {
     .sort()
     .limitFields()
     .paginate()
-    .populate();
+    // .populate({ path: "exercises", select: "title description" });
   const result = await feature.execute();
+  const populatedData = await Workout.populate(result.data, {
+    path: "exercises",
+    select: "title description -_id",
+  });
+
+  // جایگزین کردن data با populatedData
+  result.data = populatedData;
   return res.status(200).json(result);
 });
 
@@ -30,7 +37,7 @@ export const getOne = catchAsync(async (req, res, next) => {
     .limitFields()
     .filter()
     .paginate()
-    .populate();
+    .populate({ path: "exercises", select: "title description" });
   const result = await feature.execute();
   if (!result?.data?.length)
     return next(new HandleERROR("workout not found", 404));
@@ -38,12 +45,13 @@ export const getOne = catchAsync(async (req, res, next) => {
 });
 
 export const create = catchAsync(async (req, res, next) => {
-  const { title, description, duration, isActive } = req.body;
+  const { title, description, duration, isActive, exercises } = req.body;
   const workout = await Workout.create({
     title,
     description,
     duration,
     isActive,
+    exercises: exercises ?? [],
   });
   return res.status(201).json({
     success: true,
@@ -58,12 +66,16 @@ export const update = catchAsync(async (req, res, next) => {
   if (!workout) {
     return next(new HandleERROR("workout not found", 404));
   }
-  const { title, description, duration, isActive } = req.body;
+  const { title, description, duration, isActive, exercises } = req.body;
 
   workout.title = title ?? workout.title;
   workout.description = description ?? workout.description;
   workout.duration = duration ?? workout.duration;
   workout.isActive = isActive ?? workout.isActive;
+
+  if (exercises) {
+    workout.exercises = exercises
+  }
 
   const updateWorkout = await workout.save();
 

@@ -4,7 +4,6 @@ const workoutSchema = new mongoose.Schema(
     title: {
       type: String,
       required: [true, "title workout is required"],
-      unique: [true, "title workout must be unique"],
       trim: true,
     },
     description: {
@@ -17,6 +16,15 @@ const workoutSchema = new mongoose.Schema(
       required: [true, "duration workout is required"],
       min: 1,
     },
+    exercises: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Exercise",
+        },
+      ],
+      default:[]
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -25,5 +33,5 @@ const workoutSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const Workout = mongoose.model("Workout",workoutSchema)
-export default Workout
+const Workout = mongoose.model("Workout", workoutSchema);
+export default Workout;
