@@ -11,6 +11,8 @@ import Workouts from "./Pages/Workouts";
 import WorkoutDetails from "./Pages/WorkoutDetails";
 import Auth from "./Pages/Auth";
 import NotFound from "./Pages/NotFound";
+import CreateWorkout from "./Pages/CreateWorkout";
+import EditWorkout from "./Pages/EditWorkout";
 
 export default function App() {
   const isAuth = useSelector((state) => state.auth.isAuth);
@@ -19,7 +21,7 @@ export default function App() {
     <>
       <Navbar />
 
-      <main className="min-h-screen">
+      <main className="min-h-screen mt-16 mb-10">
         <Routes>
           <Route
             path="/"
@@ -27,6 +29,8 @@ export default function App() {
           />
           <Route path="/workouts" element={<Workouts />} />
           <Route path="/workouts/:id" element={<WorkoutDetails />} />
+          <Route path="/workouts/create" element={<CreateWorkout />} />
+          <Route path="/workouts/:id/edit" element={<EditWorkout />} />
           <Route
             path="/auth"
             element={isAuth ? <Navigate to="/" replace /> : <Auth />}
