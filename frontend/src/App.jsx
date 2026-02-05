@@ -13,6 +13,10 @@ import Auth from "./Pages/Auth";
 import NotFound from "./Pages/NotFound";
 import CreateWorkout from "./Pages/CreateWorkout";
 import EditWorkout from "./Pages/EditWorkout";
+import Exercises from "./Pages/Exercises";
+import ExerciseDetails from "./Pages/ExercisesDetails";
+import CreateExercise from "./Pages/CreateExercises";
+import EditExercise from "./Pages/EditExercises";
 
 export default function App() {
   const isAuth = useSelector((state) => state.auth.isAuth);
@@ -31,6 +35,11 @@ export default function App() {
           <Route path="/workouts/:id" element={<WorkoutDetails />} />
           <Route path="/workouts/create" element={<CreateWorkout />} />
           <Route path="/workouts/:id/edit" element={<EditWorkout />} />
+
+          <Route path="/exercises" element={<Exercises />} />
+          <Route path="/exercises/:id" element={<ExerciseDetails />} />
+          <Route path="/exercises/create" element={<CreateExercise />} />
+          <Route path="/exercises/:id/edit" element={<EditExercise />} />
           <Route
             path="/auth"
             element={isAuth ? <Navigate to="/" replace /> : <Auth />}

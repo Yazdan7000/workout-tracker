@@ -3,66 +3,56 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 
-export default function Workouts() {
+export default function Exercises() {
   const { token } = useSelector((state) => state.auth);
-  const [workouts, setWorkouts] = useState([]);
+  const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const API_URL = "http://localhost:3000/api";
 
   useEffect(() => {
-    const fetchWorkouts = async () => {
+    const fetchExercises = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_URL}/workouts`, {
+        const res = await fetch(`${API_URL}/exercises`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        setWorkouts(data.data || []);
+        setExercises(data.data || []);
       } catch (err) {
-        toast.error("Failed to fetch workouts");
+        toast.error("Failed to fetch exercises");
       } finally {
         setLoading(false);
       }
     };
-
-    fetchWorkouts();
+    fetchExercises();
   }, [token]);
 
   if (loading) return <p className="p-6">Loading...</p>;
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Workouts</h1>
+        <h1 className="text-3xl font-bold">Exercises</h1>
         <Link
-          to="/workouts/create"
+          to="/exercises/create"
           className="bg-blue-600 text-white px-4 py-2 rounded"
         >
-          + Create Workout
+          + Create Exercise
         </Link>
       </div>
 
-      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {workouts.map((w) => (
+        {exercises.map((ex) => (
           <div
-            key={w._id}
+            key={ex._id}
             className="bg-white p-5 rounded-xl shadow hover:shadow-lg transition"
           >
-            <h2 className="text-xl font-semibold mb-2">{w.title}</h2>
-
-            <p className="text-gray-600 mb-2">
-              {w.description || "No description"}
-            </p>
-
-            <p className="text-sm text-gray-500 mb-4">
-              Duration: {w.duration} min
-            </p>
+            <h2 className="text-xl font-semibold mb-2">{ex.title}</h2>
+            <p className="text-gray-600 mb-4">{ex.description || "No description"}</p>
 
             <Link
-              to={`/workouts/${w._id}`}
+              to={`/exercises/${ex._id}`}
               className="text-blue-600 font-semibold hover:underline"
             >
               View Details →
